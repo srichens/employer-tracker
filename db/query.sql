@@ -7,4 +7,7 @@ FROM employee
 JOIN role ON employee.role_id = role.id
 JOIN department ON role.department_id = department.id;
 
-SELECT role.title FROM role;
+SELECT title FROM role;
+
+SELECT concat(first_name,' ',last_name) AS manager
+FROM employee WHERE manager_id IS NULL;
