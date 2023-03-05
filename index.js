@@ -19,61 +19,106 @@ let employeeArray = [];
 let roleIdArray = [];
 let managerIdArray = [];
 let departmentIdArray = [];
+let employeeMgrId;
+let employeeRoleId;
 
 function roleList() {
     db.query('SELECT title FROM role', function (err, results) {      
         for (let i = 0; i < results.length; i++)
-        roleArray.push(results[i].title);        
+        roleArray.push(results[i].title);  
     })
 };
 
 function departmentList() {
     db.query('SELECT name FROM department', function (err, results) {      
         for (let i = 0; i < results.length; i++)
-        departmentArray.push(results[i].name);       
+            departmentArray.push(results[i].name); 
     })
 };
 
 function managerList() {
     db.query("SELECT concat(employee.first_name,' ',employee.last_name) AS manager FROM employee WHERE manager_id IS NULL", function (err, results) {      
-        for (let i = 0; i < results.length; i++)
-        managerArray.push(results[i].manager);        
+        for (let i = 0; i < results.length; i++) 
+        managerArray.push(results[i].manager);  
     })
 };
 
 function employeeList() {
     db.query("SELECT concat(employee.first_name,' ',employee.last_name) AS name FROM employee", function (err, results) {      
-        for (let i = 0; i < results.length; i++)
-        employeeArray.push(results[i].name);        
+        for (let i = 0; i < results.length; i++) 
+        employeeArray.push(results[i].name);     
     })
 };
 
-function newEmployee(firstname, lastname, employeeRoleID, manager) {
-    db.query(`INSERT INTO employee (first_name, last_name, role_id) VALUES ('${firstname}', '${lastname}', '${employeeRoleID}')`, function (err, results) {
-        // console.log(results);
-    });     
+function managerId(manager) {   
     db.query("SELECT concat(first_name,' ',last_name) AS manager, employee.id FROM employee WHERE manager_id IS NULL", function (err, results) {
-        for (let i = 0; i < results.length; i++){
-            managerIdArray.push(results[i]);
-            if(managerIdArray[i].title == manager) {
-                let employeeMgrId = managerIdArray[i].role_id;    
-                addManager(employeeMgrId);              
-            }
-        }
+        for (let i = 0; i < results.length; i++) {
+        managerIdArray.push(results[i]);
+        if(managerIdArray[i].title == manager) {
+            manager = managerIdArray[i].role_id;
+            return manager;
+              
+        }}
+    })       
+};
+
+function roleId(role) {
+    db.query('SELECT employee.role_id, role.title FROM employee JOIN role ON employee.role_id = role.id', function (err, results) {
+        for (let i = 0; i < results.length; i++) {
+        roleIdArray.push(results[i]);
+        if(roleIdArray[i].title == role) {
+            role = roleIdArray[i].role_id;
+            return role;
+        }}
+    }) 
+};
+// function newEmployee(firstname, lastname, employeeRoleID, manager) {
+//     db.query(`INSERT INTO employee (first_name, last_name, role_id) VALUES ('${firstname}', '${lastname}', '${employeeRoleID}')`, function (err, results) {
+//         // console.log(results);
+//     });     
+//     db.query("SELECT concat(first_name,' ',last_name) AS manager, employee.id FROM employee WHERE manager_id IS NULL", function (err, results) {
+//         for (let i = 0; i < results.length; i++){
+//             managerIdArray.push(results[i]);
+//             if(managerIdArray[i].title == manager) {
+//                 let employeeMgrId = managerIdArray[i].role_id;    
+//                 addManager(employeeMgrId);              
+//             }
+//         }
+//     });  
+// }
+
+
+// function addManager(employeeMgrId) {
+//     db.query(`INSERT INTO employee (manager_id) VALUES ('${employeeMgrId}')`, function (err, results) {
+//         console.log('Employee has been added to the database');
+//         askQuestions();
+//     });     
+// }
+
+function newEmployee(firstname, lastname, role, manager) {
+    roleId(role);
+    managerId(manager);
+    db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${firstname}', '${lastname}', '${role}', '${manager}')`, function (err, results) {
+        console.log('Employee has been added');
+        askQuestions();   
+        
     });  
 }
 
 
-function addManager(employeeMgrId) {
-    db.query(`INSERT INTO employee (manager_id) VALUES ('${employeeMgrId}')`, function (err, results) {
-        console.log('Employee has been added to the database');
+function addManager(firstname, lastname, employeeRoleId, employeeMgrId) {
+    // db.query(`INSERT INTO employee (manager_id) VALUES ('${employeeMgrId}')`, function (err, results) {
+    //     console.log('Employee has been added to the database');
+    db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${firstname}', '${lastname}', '${employeeRoleId}', '${employeeMgrId}')`, function (err, results) {
+        console.log(`${firstname} ${lastname} has been added to the database`);        
         askQuestions();
     });     
 }
 
 function newRole(rolename, salary, departmentId) {
     db.query(`INSERT INTO role (title, salary, department_id) VALUES ('${rolename}', '${salary}', '${departmentId}')`, function (err, results) {
-        console.log(results);
+        console.log(`Added ${rolename} to the database`);
+        askQuestions();
     });
   
 }
@@ -158,19 +203,11 @@ function addEmployee() {
     .then(response => {    
         let firstname = response.firstname;
         let lastname = response.lastname;    
-        let manager = response.manager;       
-        
-        db.query('SELECT employee.role_id, role.title FROM employee JOIN role ON employee.role_id = role.id', function (err, results) {
-            for (let i = 0; i < results.length; i++){
-                roleIdArray.push(results[i]);
-                if(roleIdArray[i].title == response.role) {
-                    let employeeRoleID= roleIdArray[i].role_id;                    
-                    newEmployee(firstname, lastname, employeeRoleID, manager);
-                }
-            }
-        });  
-        
+        let manager = response.manager;     
+        let role = response.role;
+        newEmployee(firstname, lastname, manager, role);        
     }) 
+    
     
 };
 
@@ -264,8 +301,10 @@ function addDepartment() {
     inquirer
     .prompt(addDeptQues)    
     .then(response =>  {
-        db.query(`INSERT INTO department (name) VALUES ('${response.addDept}')`, function (err, results) {
-        console.log(results);
+        let department = response.addDept;
+        db.query(`INSERT INTO department (name) VALUES ('${department}')`, function (err, results) {
+        console.log(`Added ${department} to the database`);
+        askQuestions();
         })
     })
 };
