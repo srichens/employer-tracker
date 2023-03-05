@@ -16,6 +16,7 @@ let roleArray = [];
 let departmentArray = [];
 let managerArray = [];
 let employeeArray = [];
+let roleIdArray = [];
 
 function roleList() {
     db.query('SELECT title FROM role', function (err, results) {      
@@ -133,8 +134,9 @@ function addEmployee() {
         });
         db.query('SELECT employee.role_id, role.title FROM employee JOIN role ON employee.role_id = role.id', function (err, results) {
             for (let i = 0; i < results.length; i++){
-                if(response.role = results[i].title) {
-                    let employeeRoleID= results[i].role_id;
+                roleIdArray.push(results[i]);
+                if(roleIdArray[i].title == response.role) {
+                    let employeeRoleID= roleIdArray[i].role_id;
                     console.log(employeeRoleID)
                 }
             }
