@@ -1,4 +1,5 @@
 const mysql = require('mysql2');
+const Employee = require('./lib/Employee');
 
 const inquirer = require('inquirer');
 
@@ -21,6 +22,7 @@ let managerIdArray = [];
 let departmentIdArray = [];
 let employeeMgrId;
 let employeeRoleId;
+let employees = [];
 
 function roleList() {
     db.query('SELECT title FROM role', function (err, results) {      
@@ -50,28 +52,28 @@ function employeeList() {
     })
 };
 
-function managerId(manager) {   
-    db.query("SELECT concat(first_name,' ',last_name) AS manager, employee.id FROM employee WHERE manager_id IS NULL", function (err, results) {
-        for (let i = 0; i < results.length; i++) {
-        managerIdArray.push(results[i]);
-        if(managerIdArray[i].title == manager) {
-            manager = managerIdArray[i].role_id;
-            return manager;
+// function managerId() {   
+//     db.query("SELECT concat(first_name,' ',last_name) AS manager, employee.id FROM employee WHERE manager_id IS NULL", function (err, results) {
+//         for (let i = 0; i < results.length; i++) {
+//         managerIdArray.push(results[i]);
+//         if(managerIdArray[i].title == manager) {
+//             employeeMgrId = managerIdArray[i].role_id;
+//             return employeeMgrId;
               
-        }}
-    })       
-};
+//         }}
+//      })       
+// };
 
-function roleId(role) {
-    db.query('SELECT employee.role_id, role.title FROM employee JOIN role ON employee.role_id = role.id', function (err, results) {
-        for (let i = 0; i < results.length; i++) {
-        roleIdArray.push(results[i]);
-        if(roleIdArray[i].title == role) {
-            role = roleIdArray[i].role_id;
-            return role;
-        }}
-    }) 
-};
+// function roleId() {
+//     db.query('SELECT employee.role_id, role.title FROM employee JOIN role ON employee.role_id = role.id', function (err, results) {
+//         for (let i = 0; i < results.length; i++) {
+//          roleIdArray.push(results[i]);
+        // if(roleIdArray[i].title == role) {
+        //     employeeRoleId = roleIdArray[i].role_id;
+        //     return employeeRoleId;
+        // }}
+//     }) 
+// };
 // function newEmployee(firstname, lastname, employeeRoleID, manager) {
 //     db.query(`INSERT INTO employee (first_name, last_name, role_id) VALUES ('${firstname}', '${lastname}', '${employeeRoleID}')`, function (err, results) {
 //         // console.log(results);
@@ -95,25 +97,32 @@ function roleId(role) {
 //     });     
 // }
 
-function newEmployee(firstname, lastname, role, manager) {
-    roleId(role);
-    managerId(manager);
-    db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${firstname}', '${lastname}', '${role}', '${manager}')`, function (err, results) {
-        console.log('Employee has been added');
-        askQuestions();   
+// function newEmployee(firstname, lastname, role, manager) {
+//     roleId();
+//     console.log(roleIdArray);
+//     if(roleIdArray[i].title == role) 
+//     employeeRoleId = roleIdArray[i].role_id;    
+
+//     managerId();
+//     if(managerIdArray[i].title == manager) 
+//         employeeMgrId = managerIdArray[i].role_id;  
         
-    });  
-}
+//     db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${firstname}', '${lastname}', '${employeeRoleId}', '${employeeMgrId}')`, function (err, results) {
+//         console.log('Employee has been added');
+//         askQuestions();   
+        
+//     });  
+// }
 
 
-function addManager(firstname, lastname, employeeRoleId, employeeMgrId) {
+// function addManager(firstname, lastname, employeeRoleId, employeeMgrId) {
     // db.query(`INSERT INTO employee (manager_id) VALUES ('${employeeMgrId}')`, function (err, results) {
     //     console.log('Employee has been added to the database');
-    db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${firstname}', '${lastname}', '${employeeRoleId}', '${employeeMgrId}')`, function (err, results) {
-        console.log(`${firstname} ${lastname} has been added to the database`);        
-        askQuestions();
-    });     
-}
+//     db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${firstname}', '${lastname}', '${employeeRoleId}', '${employeeMgrId}')`, function (err, results) {
+//         console.log(`${firstname} ${lastname} has been added to the database`);        
+//         askQuestions();
+//     });     
+// }
 
 function newRole(rolename, salary, departmentId) {
     db.query(`INSERT INTO role (title, salary, department_id) VALUES ('${rolename}', '${salary}', '${departmentId}')`, function (err, results) {
@@ -201,11 +210,8 @@ function addEmployee() {
     inquirer
     .prompt(addEmpQues)    
     .then(response => {    
-        let firstname = response.firstname;
-        let lastname = response.lastname;    
-        let manager = response.manager;     
-        let role = response.role;
-        newEmployee(firstname, lastname, manager, role);        
+        const newEmployee = new Employee(response.firstname, response.lastname, response.manager, response.role)
+        employees.push(newEmployee);     
     }) 
     
     

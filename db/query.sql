@@ -21,3 +21,8 @@ FROM employee WHERE manager_id IS NULL;
 
 SELECT role.department_id AS id, department.name AS department 
 FROM department JOIN role ON role.department_id = department.id;
+
+UPDATE produce
+SET name = "strawberry"
+WHERE id = 1;
+
