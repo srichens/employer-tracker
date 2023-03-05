@@ -80,6 +80,16 @@ function startApp(){
 
 startApp();
 
+// function roleById() {
+//     db.query('SELECT employee.role_id, role.title FROM employee JOIN role ON employee.role_id = role.id', function (err, results) {
+//         for (let i = 0; i < results.length; i++){
+//             let employeeRole;
+//             if(employeeRole = results[i].title) {
+//                 let employeeRoleID= results[i].role_id;
+//             }
+//         }
+//       });
+// }
 function viewEmployees() {
 
     db.query('SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary FROM employee JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id', function (err, results) {
@@ -120,7 +130,16 @@ function addEmployee() {
     .then(response => {
         db.query(`INSERT INTO employee (first_name, last_name) VALUES ('${response.firstname}', '${response.lastname}')`, function (err, results) {
             console.log(results);
-        })
+        });
+        db.query('SELECT employee.role_id, role.title FROM employee JOIN role ON employee.role_id = role.id', function (err, results) {
+            for (let i = 0; i < results.length; i++){
+                if(response.role = results[i].title) {
+                    let employeeRoleID= results[i].role_id;
+                    console.log(employeeRoleID)
+                }
+            }
+          });
+        
         })
     
 };
