@@ -15,3 +15,6 @@ FROM employee WHERE manager_id IS NULL;
 SELECT employee.role_id, role.title
 FROM employee
 JOIN role ON employee.role_id = role.id;
+
+SELECT concat(first_name,' ',last_name) AS manager, employee.id
+FROM employee WHERE manager_id IS NULL;
