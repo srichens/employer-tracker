@@ -11,3 +11,9 @@ SELECT title FROM role;
 
 SELECT concat(first_name,' ',last_name) AS manager
 FROM employee WHERE manager_id IS NULL;
+
+
+
+INSERT INTO employee (first_name, last_name)
+  VALUES 
+  ("Sarah", "Richens");

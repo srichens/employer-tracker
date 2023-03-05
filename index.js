@@ -117,7 +117,12 @@ function addEmployee() {
     managerList();
     inquirer
     .prompt(addEmpQues)    
-    .then(response => console.log(response))
+    .then(response => {
+        db.query(`INSERT INTO employee (first_name, last_name) VALUES ('${response.firstname}', '${response.lastname}')`, function (err, results) {
+            console.log(results);
+        })
+        })
+    
 };
 
 const updateRoleQues = [
@@ -149,7 +154,6 @@ function viewRoles() {
     function (err, results) {
         console.table(results);
     })
-
 };
 
 const addRoleQues = [
@@ -175,7 +179,11 @@ function addRole() {
     departmentList();
     inquirer
     .prompt(addRoleQues)    
-    .then(response => console.log(response))
+    .then(response => {
+        db.query(`INSERT INTO employee (first_name, last_name VALUES (${response.firstname}, ${response.lastname}))`, function (err, results) {
+            console.table(results);
+        })
+    })
 };
 
 function viewDepartments() {
