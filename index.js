@@ -40,12 +40,7 @@ function employeeList() {
     })
 };
 
-function newEmployee(firstName, lastName, employeeRoleId, managerName) {
-    // let firstname = currentEmployee.getFirstName();
-    // let lastname = currentEmployee.getLastName();
-    // let employeeRoleId = currentEmployee.getEmployeeRoleId();
-    // let manager = currentEmployee.getManagerName();
-   
+function newEmployee(firstName, lastName, employeeRoleId, managerName) {     
     db.query("SELECT concat(first_name,' ',last_name) AS manager, employee.id FROM employee", function (err, results) {    
         for (let i = 0; i < results.length; i++){           
             if(results[i].manager === managerName) {
@@ -53,6 +48,7 @@ function newEmployee(firstName, lastName, employeeRoleId, managerName) {
                 
                 db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${firstName}', '${lastName}', '${employeeRoleId}', '${employeeMgrId}')`, function (err, results) {
                     employeeArray.push(`${firstName} ${lastName}`);
+                    console.log(`The employee ${firstName} ${lastName} has been added to the database`)
                     askQuestions();                   
                 });                
             }
@@ -60,27 +56,25 @@ function newEmployee(firstName, lastName, employeeRoleId, managerName) {
     })
 };    
     
-    function addUpdatedRole(employee, employeeRoleId) {           
-        db.query("SELECT concat(first_name,' ',last_name) AS fullname, employee.id FROM employee", function (err, results) {         
-            for (let i = 0; i < results.length; i++){           
-                if(results[i].fullname === employee) {
-                    let employeeId  = results[i].id;               
-                    
-                    db.query(`UPDATE employee SET role_id = ${employeeRoleId} WHERE id = ${employeeId}`, function (err, results) {                        
-                        askQuestions();                        
-                    });                
-                }
+function addUpdatedRole(employee, employeeRoleId) {           
+    db.query("SELECT concat(first_name,' ',last_name) AS fullname, employee.id FROM employee", function (err, results) {         
+        for (let i = 0; i < results.length; i++){           
+            if(results[i].fullname === employee) {
+                let employeeId  = results[i].id;               
+                
+                db.query(`UPDATE employee SET role_id = ${employeeRoleId} WHERE id = ${employeeId}`, function (err, results) {                        
+                    (console.log(`${employee}'s role has been updated`))
+                    askQuestions();                        
+                });                
             }
-        });     
-  
-  
-    
+        }
+    });      
 };
 
 function newRole(rolename, salary, departmentId) {
-    db.query(`INSERT INTO role (title, salary, department_id) VALUES ('${rolename}', '${salary}', '${departmentId}')`, function (err, results) {
-        console.log(`Added ${rolename} to the database`);
+    db.query(`INSERT INTO role (title, salary, department_id) VALUES ('${rolename}', '${salary}', '${departmentId}')`, function (err, results) {     
         roleArray.push(`${rolename}`);
+        console.log(`The role ${rolename} has been added to the database`)
         askQuestions();
     })  
 };
@@ -96,7 +90,8 @@ const startMessage = [
 
 function startApp(){
     console.log("----------------------------------\n|         E m p l o y e e        |\n|          M a n a g e r         |\n----------------------------------");
-    roleList();        
+    roleList();
+    departmentList();        
     employeeList();  
     askQuestions();
 };
@@ -169,24 +164,19 @@ function addEmployee() {
         db.query('SELECT employee.role_id AS id, role.title AS title FROM employee JOIN role ON employee.role_id = role.id', function (err, results) {
             for (let i = 0; i < results.length; i++){                
                 if(results[i].title == response.role) {
-                    let employeeRoleId = results[i].id;                   
-                    // let currentEmployee = new Employee(firstName, lastName, employeeRoleId, managerName);  
-                    // newEmployee(currentEmployee);      
-                    newEmployee(firstName, lastName, employeeRoleId, managerName);                  
-                    
+                    let employeeRoleId = results[i].id;                 
+                    newEmployee(firstName, lastName, employeeRoleId, managerName);                
                 }
             }                
-        });
-            
-    })
-    
+        })            
+    })    
 };
 
 const updateRoleQues = [
     {
         type: 'input',
         name: 'confirm',
-        message: "Hit enter to confirm role update"                
+        message: "You are about to update and employee's role - hit enter to continue"                
 
     },  
     {
@@ -213,8 +203,7 @@ function updateRole() {
             for (let i = 0; i < results.length; i++){                
                 if(results[i].title == response.newrole) {
                     let employeeRoleId = results[i].id;
-                    addUpdatedRole(employee, employeeRoleId);                   
-                    
+                    addUpdatedRole(employee, employeeRoleId);                
                 }
             }                
         })
@@ -249,7 +238,6 @@ const addRoleQues = [
 ];  
 
 function addRole() {    
-    departmentList();
     inquirer
     .prompt(addRoleQues)    
     .then(response => {
@@ -289,8 +277,8 @@ function addDepartment() {
     .then(response =>  {
         let department = response.addDept;
         db.query(`INSERT INTO department (name) VALUES ('${department}')`, function (err, results) {
-        console.log(`Added ${department} to the database`);
+        console.log(`The department ${department} has been added to the database`);
         askQuestions();
         })
     })
-}
+};
