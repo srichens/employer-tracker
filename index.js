@@ -56,14 +56,14 @@ function newEmployee(firstName, lastName, employeeRoleId, managerName) {
     })
 };    
     
-function addUpdatedRole(employee, employeeRoleId) {           
+function addUpdatedRole(employee, employeeRoleId, newrole) {           
     db.query("SELECT concat(first_name,' ',last_name) AS fullname, employee.id FROM employee", function (err, results) {         
         for (let i = 0; i < results.length; i++){           
             if(results[i].fullname === employee) {
                 let employeeId  = results[i].id;               
                 
                 db.query(`UPDATE employee SET role_id = ${employeeRoleId} WHERE id = ${employeeId}`, function (err, results) {                        
-                    (console.log(`${employee}'s role has been updated`))
+                    (console.log(`${employee}'s role has been updated to ${newrole}`))
                     askQuestions();                        
                 });                
             }
@@ -172,13 +172,7 @@ function addEmployee() {
     })    
 };
 
-const updateRoleQues = [
-    {
-        type: 'input',
-        name: 'confirm',
-        message: "You are about to update and employee's role - hit enter to continue"                
-
-    },  
+const updateRoleQues = [  
     {
         type: 'list',
         name: 'employee',
@@ -194,16 +188,18 @@ const updateRoleQues = [
 ];  
 
 function updateRole() {  
+   let employee;
+   let newrole;
     inquirer
     .prompt(updateRoleQues)    
     .then(response => {
-        let employee = response.employee;
-        
+        employee = response.employee;
+        newrole = response.newrole;        
         db.query('SELECT employee.role_id AS id, role.title AS title FROM employee JOIN role ON employee.role_id = role.id', function (err, results) {
             for (let i = 0; i < results.length; i++){                
                 if(results[i].title == response.newrole) {
                     let employeeRoleId = results[i].id;
-                    addUpdatedRole(employee, employeeRoleId);                
+                    addUpdatedRole(employee, employeeRoleId, newrole);                
                 }
             }                
         })
