@@ -34,14 +34,6 @@ function departmentList() {
     })
 };
 
-// function managerList() {    
-//     db.query("SELECT concat(employee.first_name,' ',employee.last_name) AS manager FROM employee WHERE manager_id IS NULL", function (err, results) {      
-//         for (let i = 0; i < results.length; i++) 
-//         managerArray.push(results[i].manager);  
-//         // managerArray.push('None');
-//     })
-// };
-
 function employeeList() {    
     db.query("SELECT concat(employee.first_name,' ',employee.last_name) AS name FROM employee", function (err, results) {      
         for (let i = 0; i < results.length; i++) 
@@ -63,20 +55,36 @@ function newEmployee(currentEmployee) {
                 
                 db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${firstname}', '${lastname}', '${employeeRoleId}', '${employeeMgrId}')`, function (err, results) {
                     employeeArray.push(`${firstname} ${lastname}`);
-                    console.log(employeeArray);
+                    askQuestions();
                     // console.table(results);
                 });                
             }
         }
-    });
+    })
+};    
     
+    function addUpdatedRole(employee, employeeRoleId) {
+        // let firstname = currentEmployee.getFirstName();
+        // let lastname = currentEmployee.getLastName();
+        // let employeeRoleId = currentEmployee.getEmployeeRoleId();
+        // let manager = currentEmployee.getManagerName();
+       
+        db.query("SELECT concat(first_name,' ',last_name) AS fullname, employee.id FROM employee", function (err, results) {
+            // console.log(results[0].id);
+            for (let i = 0; i < results.length; i++){           
+                if(results[i].fullname === employee) {
+                    let employeeId  = results[i].id;               
+                    
+                    db.query(`UPDATE employee SET role_id = ${employeeRoleId} WHERE id = ${employeeId}`, function (err, results) {
+                        // employeeArray.push(`${firstname} ${lastname}`);
+                        askQuestions();
+                        // console.table(results);
+                    });                
+                }
+            }
+        });     
   
-      
   
-    // db.query(`INSERT INTO employee (manager_id) VALUES ('${employeeMgrId}') WHERE first_name = ${firstname} AND last_name = ${lastname}`, function (err, results) {
-    //     console.log('Employee has been added to the database');       
-    //     askQuestions();
-    // });         
     
 };
 
@@ -259,8 +267,16 @@ function updateRole() {
     .prompt(updateRoleQues)    
     .then(response => {
         let employee = response.employee;
-        let role = response.newrole;
-        console.log(employee, role);
+        
+        db.query('SELECT employee.role_id AS id, role.title AS title FROM employee JOIN role ON employee.role_id = role.id', function (err, results) {
+            for (let i = 0; i < results.length; i++){                
+                if(results[i].title == response.newrole) {
+                    let employeeRoleId = results[i].id;
+                    addUpdatedRole(employee, employeeRoleId);                   
+                    
+                }
+            }                
+        })
     })
 };
 
@@ -316,7 +332,7 @@ function viewDepartments() {
         console.table(results);
         askQuestions();
     })
-}
+};
 
 const addDeptQues = [
     {
@@ -336,4 +352,4 @@ function addDepartment() {
         askQuestions();
         })
     })
-};
+}
