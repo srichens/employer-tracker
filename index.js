@@ -21,8 +21,8 @@ let departmentIdArray = [];
 
 function roleList() { 
     db.query('SELECT title FROM role', function (err, results) {      
-        for (let i = 0; i < results.length; i++)
-        roleArray.push(results[i].title);  
+        for (let i = 0; i < results.length; i++) 
+            roleArray.push(results[i].title);       
     })
 };
 
@@ -50,7 +50,7 @@ function employeeList() {
 
 function newEmployee(firstname, lastname, employeeRoleId, manager) {
     db.query(`INSERT INTO employee (first_name, last_name, role_id) VALUES ('${firstname}', '${lastname}', '${employeeRoleId}')`, function (err, results) {
-        // console.log(results);
+        employeeArray.push(`${firstname} ${lastname}`);
     });     
       
     db.query("SELECT concat(first_name,' ',last_name) AS manager, employee.id FROM employee WHERE manager_id IS NULL", function (err, results) {
@@ -65,7 +65,7 @@ function newEmployee(firstname, lastname, employeeRoleId, manager) {
 
 function addManager(employeeMgrId, firstname, lastname) {
     db.query(`INSERT INTO employee (manager_id) VALUES ('${employeeMgrId}') WHERE first_name = ${firstname} AND last_name = ${lastname}`, function (err, results) {
-        console.log('Employee has been added to the database');
+        console.log('Employee has been added to the database');       
         askQuestions();
     });     
 };
@@ -99,6 +99,7 @@ function addManager(employeeMgrId, firstname, lastname) {
 function newRole(rolename, salary, departmentId) {
     db.query(`INSERT INTO role (title, salary, department_id) VALUES ('${rolename}', '${salary}', '${departmentId}')`, function (err, results) {
         console.log(`Added ${rolename} to the database`);
+        roleArray.push(`${rolename}`);
         askQuestions();
     })  
 };
@@ -114,6 +115,9 @@ const startMessage = [
 
 function startApp(){
     console.log("----------------------------------\n|         E m p l o y e e        |\n|          M a n a g e r         |\n----------------------------------");
+    roleList();    
+    managerList();
+    employeeList();  
     askQuestions();
 };
 
@@ -176,8 +180,8 @@ const addEmpQues = [
 ];  
 
 function addEmployee() {        
-    roleList();    
-    managerList();
+    // roleList();    
+    // managerList();   
     inquirer
     .prompt(addEmpQues)    
     .then(response => {    
@@ -218,8 +222,8 @@ const updateRoleQues = [
 ];  
 
 function updateRole() {
-    roleList();
-    employeeList();   
+    // roleList();
+    // employeeList();   
     inquirer
     .prompt(updateRoleQues)    
     .then(response => {
