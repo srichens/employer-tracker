@@ -1,5 +1,4 @@
 const mysql = require('mysql2');
-// const Employee = require('./lib/Employee');
 
 const inquirer = require('inquirer');
 
@@ -16,9 +15,24 @@ const db = mysql.createConnection(
 let roleArray = [];
 let departmentArray = [];
 let employeeArray = [];
-let employeeIdArray = [];
 let departmentIdArray = [];
 let employeeId;
+
+const startMessage = [
+    {
+        type: 'list',
+        name: 'start',
+        message: "What would you like to do?",
+        choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit']
+    }
+];
+
+startApp();
+
+function startApp() {
+    console.log("----------------------------------\n|         E m p l o y e e        |\n|          M a n a g e r         |\n----------------------------------");
+    roleList();   
+};
 
 function roleList() {
     db.query('SELECT id, title FROM role', function (err, results) {
@@ -35,14 +49,14 @@ function departmentList() {
     db.query('SELECT name FROM department', function (err, results) {
         for (let i = 0; i < results.length; i++)
             departmentArray.push(results[i].name);
-            employeeIdList()
+            employeeList()
     })
 };
 
-function employeeIdList() {
+function employeeList() {
     db.query("SELECT concat(employee.first_name,' ',employee.last_name) AS name, id FROM employee", function (err, results) {
         for (let i = 0; i < results.length; i++)
-            employeeIdArray.push({
+            employeeArray.push({
                 name: results[i].name,
                 id: results[i].id
             });
@@ -50,125 +64,7 @@ function employeeIdList() {
     })
 };
 
-// function employeeList() {
-//     db.query("SELECT concat(employee.first_name,' ',employee.last_name) AS name FROM employee", function (err, results) {
-//         for (let i = 0; i < results.length; i++)
-//             employeeArray.push(results[i].name);
-//             askQuestions()
-//     })
-// };
-
-function newEmployee(firstName, lastName, employeeRoleId, employeeMgrId) {
-
-    db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${firstName}', '${lastName}', '${employeeRoleId}', '${employeeMgrId}')`, function (err, results) {
-        let name = `${firstName} ${lastName}`;
-        // console.log(name);
-        // employeeArray.push(name);
-        // console.log(`The employee ${firstName} ${lastName} has been added to the database`);
-        // askQuestions();
-        getEmployeeID(name);
-       
-    });
-    // db.query("SELECT concat(first_name,' ',last_name) AS manager, employee.id FROM employee", function (err, results) {
-    //     for (let i = 0; i < results.length; i++) {
-    //         if (results[i].manager === managerName) {
-    //             employeeMgrId = results[i].id;
-
-               
-    //         }
-    //     }
-    // })
-};
-
-function getEmployeeID(name) {
-       db.query("SELECT concat(first_name,' ',last_name) AS name, employee.id AS id FROM employee", function (err, results) {
-        for (let i = 0; i < results.length; i++) {
-            if (results[i].name === name) {
-                employeeId = results[i].id;
-                employeeIdArray.push({
-                    name: results[i].name,
-                    id: employeeId
-                });
-                console.log(`${name} has been added to the database`);
-                askQuestions();               
-            }
-        }
-    })
-}
-
-function addUpdatedRole(employeeId, roleId) {
-    db.query(`UPDATE employee SET role_id = ${roleId} WHERE id = ${employeeId}`, function (err, results) {
-        if (err) { console.log(err) };
-        (console.log("The employee's role has been updated"))
-        askQuestions();
-    });
-
-
-    // db.query("SELECT concat(first_name,' ',last_name) AS fullname, employee.id FROM employee", function (err, results) {
-    //     if (err) { console.log(err) };
-
-    //     const employeeInfo = results.filter(e => {
-    //         return e.fullname === employee
-    //     });
-
-    //     if(employeeInfo.length > 0) {
-    //         console.log(employeeInfo[0])
-    //         let employeeId = employeeInfo[0].id;
-
-    //         db.query(`UPDATE employee SET role_id = ${employeeRoleId} WHERE id = ${employeeId}`, function (err, results) {
-    //             if (err) { console.log(err) };
-    //             (console.log(`${employee}'s role has been updated to ${newrole}`))
-    //             askQuestions();
-    //         });
-    //     } else {
-    //         console.err("Employee name not found!")
-    //         return;
-    //     }
-
-        // for (let i = 0; i < results.length; i++){           
-        //     if(results[i].fullname === employee) {
-        //         let employeeId  = results[i].id;               
-
-        //         db.query(`UPDATE employee SET role_id = ${employeeRoleId} WHERE id = ${employeeId}`, function (err, results) {    
-        //             if(err) {console.log(err)};                    
-        //             (console.log(`${employee}'s role has been updated to ${newrole}`))
-        //             askQuestions();                        
-        //         });                
-        //     }
-        // }
-    // });
-};
-
-function newRole(rolename, salary, departmentId) {
-    db.query(`INSERT INTO role (title, salary, department_id) VALUES ('${rolename}', '${salary}', '${departmentId}')`, function (err, results) {
-        roleArray.push(`${rolename}`);
-        console.log(`The role ${rolename} has been added to the database`)
-        askQuestions();
-    })
-};
-
-const startMessage = [
-    {
-        type: 'list',
-        name: 'start',
-        message: "What would you like to do?",
-        choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit']
-    }
-];
-
-function startApp() {
-    console.log("----------------------------------\n|         E m p l o y e e        |\n|          M a n a g e r         |\n----------------------------------");
-    roleList();
-    // departmentList();
-    // employeeList();
-    // askQuestions();
-};
-
-function askQuestions() {
-    // console.log(employeeArray)
-    // console.log(roleArray)
-
-
+function askQuestions() {  
     inquirer
         .prompt(startMessage)
         .then(response => {
@@ -187,17 +83,12 @@ function askQuestions() {
             } else if (response.start === 'Add Department') {
                 addDepartment()
             } else { console.log('Goodbye') }
-
         })
 };
 
-startApp();
-
 function viewEmployees() {
 
-    db.query('SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary FROM employee JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id', function (err, results) {
-        // console.log(results.length)
-        
+    db.query('SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary FROM employee JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id', function (err, results) {              
         console.table(results);
         askQuestions();
     });
@@ -232,7 +123,7 @@ const addEmpQues = [
         name: 'manager',
         message: "Who is the employee's manager?",
         choices: () => {
-            return employeeIdArray.map(e => {
+            return employeeArray.map(e => {
                 return {
                     name: e.name,
                     value: e.id
@@ -250,16 +141,31 @@ function addEmployee() {
             let lastName = response.lastname;
             let employeeMgrId = response.manager;
             let employeeRoleId = response.role;
-            newEmployee(firstName, lastName, employeeRoleId, employeeMgrId);
-            // db.query('SELECT employee.role_id AS id, role.title AS title FROM employee JOIN role ON employee.role_id = role.id', function (err, results) {
-            //     for (let i = 0; i < results.length; i++) {
-            //         if (results[i].title == response.role) {
-            //             let employeeRoleId = results[i].id;
-            //             newEmployee(firstName, lastName, employeeRoleId, managerName);
-            //         }
-            //     }
-            // })
+            newEmployee(firstName, lastName, employeeRoleId, employeeMgrId);          
         })
+};
+
+function newEmployee(firstName, lastName, employeeRoleId, employeeMgrId) {
+    db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${firstName}', '${lastName}', '${employeeRoleId}', '${employeeMgrId}')`, function (err, results) {
+        let name = `${firstName} ${lastName}`;      
+        getEmployeeID(name);       
+    })  
+};
+
+function getEmployeeID(name) {
+       db.query("SELECT concat(first_name,' ',last_name) AS name, employee.id AS id FROM employee", function (err, results) {
+        for (let i = 0; i < results.length; i++) {
+            if (results[i].name === name) {
+                employeeId = results[i].id;
+                employeeArray.push({
+                    name: results[i].name,
+                    id: employeeId
+                });
+                console.log(`${name} has been added to the database`);
+                askQuestions();               
+            }
+        }
+    })
 };
 
 const updateRoleQues = [
@@ -268,7 +174,7 @@ const updateRoleQues = [
         name: 'employee',
         message: "Which employee's role do you want to update?",
         choices: () => {
-            return employeeIdArray.map(e => {
+            return employeeArray.map(e => {
                 return {
                     name: e.name,
                     value: e.id
@@ -291,26 +197,22 @@ const updateRoleQues = [
     }
 ];
 
-function updateRole() {
-    console.log(employeeIdArray);
+function updateRole() {    
     inquirer
         .prompt(updateRoleQues)
         .then(response => {
             let employeeId = response.employee;
             let roleId = response.newrole;
-
-            addUpdatedRole(employeeId, roleId);
-            
-            // db.query('SELECT employee.role_id AS id, role.title AS title FROM employee JOIN role ON employee.role_id = role.id', function (err, results) {
-            //     if (err) { console.log(err) };
-            //     for (let i = 0; i < results.length; i++) {
-            //         if (results[i].title == response.newrole) {
-            //             let employeeRoleId = results[i].id;
-            //             addUpdatedRole(employee, employeeRoleId, newrole);
-            //         }
-            //     }
-            // })
+            addUpdatedRole(employeeId, roleId);               
         })
+};
+
+function addUpdatedRole(employeeId, roleId) {
+    db.query(`UPDATE employee SET role_id = ${roleId} WHERE id = ${employeeId}`, function (err, results) {
+        if (err) { console.log(err) };
+        (console.log("The employee's role has been updated"))
+        askQuestions();
+    })
 };
 
 function viewRoles() {
@@ -354,15 +256,20 @@ function addRole() {
                         newRole(rolename, salary, departmentId);
                     }
                 }
-            });
-
+            })
         })
 };
 
+function newRole(rolename, salary, departmentId) {
+    db.query(`INSERT INTO role (title, salary, department_id) VALUES ('${rolename}', '${salary}', '${departmentId}')`, function (err, results) {
+        roleArray.push(`${rolename}`);
+        console.log(`The role ${rolename} has been added to the database`)
+        askQuestions();
+    })
+};
+
 function viewDepartments() {
-    db.query('SELECT * FROM department', function (err, results) {
-        // let arrNoIndex = results.reduce((acc, {id, name, ...x}) => 
-        //  { acc[name] = x; return acc; }, {})
+    db.query('SELECT * FROM department', function (err, results) {        
         console.table(results);
         askQuestions();
     })
