@@ -16,8 +16,9 @@ const db = mysql.createConnection(
 let roleArray = [];
 let departmentArray = [];
 let employeeArray = [];
+let employeeIdArray = [];
 let departmentIdArray = [];
-let employeeMgrId;
+let employeeId;
 
 function roleList() {
     db.query('SELECT id, title FROM role', function (err, results) {
@@ -34,14 +35,14 @@ function departmentList() {
     db.query('SELECT name FROM department', function (err, results) {
         for (let i = 0; i < results.length; i++)
             departmentArray.push(results[i].name);
-            employeeList()
+            employeeIdList()
     })
 };
 
-function employeeList() {
+function employeeIdList() {
     db.query("SELECT concat(employee.first_name,' ',employee.last_name) AS name, id FROM employee", function (err, results) {
         for (let i = 0; i < results.length; i++)
-            employeeArray.push({
+            employeeIdArray.push({
                 name: results[i].name,
                 id: results[i].id
             });
@@ -49,12 +50,24 @@ function employeeList() {
     })
 };
 
+// function employeeList() {
+//     db.query("SELECT concat(employee.first_name,' ',employee.last_name) AS name FROM employee", function (err, results) {
+//         for (let i = 0; i < results.length; i++)
+//             employeeArray.push(results[i].name);
+//             askQuestions()
+//     })
+// };
+
 function newEmployee(firstName, lastName, employeeRoleId, employeeMgrId) {
 
     db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${firstName}', '${lastName}', '${employeeRoleId}', '${employeeMgrId}')`, function (err, results) {
-        employeeArray.push(`${firstName} ${lastName}`);
-        console.log(`The employee ${firstName} ${lastName} has been added to the database`)
-        askQuestions();
+        let name = `${firstName} ${lastName}`;
+        // console.log(name);
+        // employeeArray.push(name);
+        // console.log(`The employee ${firstName} ${lastName} has been added to the database`);
+        // askQuestions();
+        getEmployeeID(name);
+       
     });
     // db.query("SELECT concat(first_name,' ',last_name) AS manager, employee.id FROM employee", function (err, results) {
     //     for (let i = 0; i < results.length; i++) {
@@ -67,10 +80,26 @@ function newEmployee(firstName, lastName, employeeRoleId, employeeMgrId) {
     // })
 };
 
+function getEmployeeID(name) {
+       db.query("SELECT concat(first_name,' ',last_name) AS name, employee.id AS id FROM employee", function (err, results) {
+        for (let i = 0; i < results.length; i++) {
+            if (results[i].name === name) {
+                employeeId = results[i].id;
+                employeeIdArray.push({
+                    name: results[i].name,
+                    id: employeeId
+                });
+                console.log(`${name} has been added to the database`);
+                askQuestions();               
+            }
+        }
+    })
+}
+
 function addUpdatedRole(employeeId, roleId) {
     db.query(`UPDATE employee SET role_id = ${roleId} WHERE id = ${employeeId}`, function (err, results) {
         if (err) { console.log(err) };
-        (console.log(`${employeeId}'s role has been updated to ${roleId}`))
+        (console.log("The employee's role has been updated"))
         askQuestions();
     });
 
@@ -167,7 +196,7 @@ startApp();
 function viewEmployees() {
 
     db.query('SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary FROM employee JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id', function (err, results) {
-        console.log(results.length)
+        // console.log(results.length)
         
         console.table(results);
         askQuestions();
@@ -203,7 +232,7 @@ const addEmpQues = [
         name: 'manager',
         message: "Who is the employee's manager?",
         choices: () => {
-            return employeeArray.map(e => {
+            return employeeIdArray.map(e => {
                 return {
                     name: e.name,
                     value: e.id
@@ -239,7 +268,7 @@ const updateRoleQues = [
         name: 'employee',
         message: "Which employee's role do you want to update?",
         choices: () => {
-            return employeeArray.map(e => {
+            return employeeIdArray.map(e => {
                 return {
                     name: e.name,
                     value: e.id
@@ -263,6 +292,7 @@ const updateRoleQues = [
 ];
 
 function updateRole() {
+    console.log(employeeIdArray);
     inquirer
         .prompt(updateRoleQues)
         .then(response => {
