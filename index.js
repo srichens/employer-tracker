@@ -23,7 +23,7 @@ const startMessage = [
         type: 'list',
         name: 'start',
         message: "What would you like to do?",
-        choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit']
+        choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'Update Employee Manager', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit']
     }
 ];
 
@@ -74,6 +74,8 @@ function askQuestions() {
                 addEmployee()
             } else if (response.start === 'Update Employee Role') {
                 updateRole()
+            } else if (response.start === 'Update Employee Manager') {
+                updateMgr()
             } else if (response.start === 'View All Roles') {
                 viewRoles()
             } else if (response.start === 'Add Role') {
@@ -213,6 +215,54 @@ function addUpdatedRole(employeeId, roleId) {
         (console.log("The employee's role has been updated"))
         askQuestions();
     })
+};
+
+
+const updateMgrQues = [
+    {
+     type: 'list',
+     name: 'employee',
+     message: "For which employee do you want to update the manager?",
+     choices: () => {
+         return employeeArray.map(e => {
+             return {
+                 name: e.name,
+                 value: e.id
+             }
+         })
+     }
+ },
+ {
+     type: 'list',
+     name: 'newmgr',
+     message: "Which manager do you want to assign the selected employee?",
+     choices: () => {
+        return employeeArray.map(e => {
+            return {
+                name: e.name,
+                value: e.id
+            }
+        })
+    }
+ }
+];
+
+function updateMgr() {    
+ inquirer
+     .prompt(updateMgrQues)
+     .then(response => {
+         let employeeId = response.employee;
+         let mgrId = response.newmgr;
+         addUpdatedMgr(employeeId, mgrId);               
+     })
+};
+
+function addUpdatedMgr(employeeId, mgrId) {
+ db.query(`UPDATE employee SET manager_id = ${mgrId} WHERE id = ${employeeId}`, function (err, results) {
+     if (err) { console.log(err) };
+     (console.log("The employee's manager has been updated"))
+     askQuestions();
+ })
 };
 
 function viewRoles() {
