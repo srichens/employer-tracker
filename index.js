@@ -15,7 +15,6 @@ const db = mysql.createConnection(
 let roleArray = [];
 let departmentArray = [];
 let employeeArray = [];
-// let departmentIdArray = [];
 
 const startMessage = [
     {
@@ -386,96 +385,96 @@ function getDeptId(department) {
  })
 };
 
-const deleteRoleQues = [
-    {
-        type: 'list',
-        name: 'delRole',
-        message: "Which role would you like to delete?",
-        choices: () => {
-            return roleArray.map(r => {
-                return {
-                    name: r.title,
-                    value: r.id
-                }
-            })
-        }
-    }
-];
+// const deleteRoleQues = [
+//     {
+//         type: 'list',
+//         name: 'delRole',
+//         message: "Which role would you like to delete?",
+//         choices: () => {
+//             return roleArray.map(r => {
+//                 return {
+//                     name: r.title,
+//                     value: r.id
+//                 }
+//             })
+//         }
+//     }
+// ];
 
-function deleteRole() {
-    inquirer
-        .prompt(deleteRoleQues)
-        .then(response => {
-            let rolename = response.delRole;
-            db.query("SELECT title, id FROM role", function (err, results) {    
-                for (let i = 0; i < results.length; i++) {
-                    if (results[i].title === rolename) {
-                        let roleId = results[i].id;
-                        useRoleIdForDelete(rolename, roleId);
-                    }}
-            })                         
+// function deleteRole() {
+//     inquirer
+//         .prompt(deleteRoleQues)
+//         .then(response => {
+//             let rolename = response.delRole;
+//             db.query("SELECT title, id FROM role", function (err, results) {    
+//                 for (let i = 0; i < results.length; i++) {
+//                     if (results[i].title === rolename) {
+//                         let roleId = results[i].id;
+//                         useRoleIdForDelete(rolename, roleId);
+//                     }}
+//             })                         
            
-        })
-};
+//         })
+// };
 
-function useRoleIdForDelete(rolename, roleId) {  
-    db.query(`DELETE FROM role WHERE title='${rolename}'`, function (err, results) {
-                const index = roleArray.indexOf({title: rolename, id: roleId});               
-                roleArray.splice(index, 1);                  
-                console.log(`The role ${rolename} has been deleted from the database`);
-                askQuestions();
-            })
-};
-const deleteDeptQues = [
-    {
-        type: 'list',
-        name: 'delDept',
-        message: "Which department would you like to delete?",
-        choices: () => {
-            return departmentArray.map(d => {
-                return {
-                    name: d.name,
-                    value: d.name
-                }
-            })
-        }
-    }
-];
+// function useRoleIdForDelete(rolename, roleId) {  
+//     db.query(`DELETE FROM role WHERE title='${rolename}'`, function (err, results) {
+//                 const index = roleArray.indexOf({title: rolename, id: roleId});               
+//                 roleArray.splice(index, 1);                  
+//                 console.log(`The role ${rolename} has been deleted from the database`);
+//                 askQuestions();
+//             })
+// // };
+// const deleteDeptQues = [
+//     {
+//         type: 'list',
+//         name: 'delDept',
+//         message: "Which department would you like to delete?",
+//         choices: () => {
+//             return departmentArray.map(d => {
+//                 return {
+//                     name: d.name,
+//                     value: d.name
+//                 }
+//             })
+//         }
+//     }
+// ];
 
-function deleteDepartment() {
-    inquirer
-        .prompt(deleteDeptQues)
-        .then(response => {
-            let department = response.delDept;
-            db.query("SELECT name, id FROM department", function (err, results) {    
-                for (let i = 0; i < results.length; i++) {
-                    if (results[i].name === department) {
-                        let deptId = results[i].id;
-                        useDeptIdForDelete(department, deptId);
-                    }}
-            })                         
+// function deleteDepartment() {
+//     inquirer
+//         .prompt(deleteDeptQues)
+//         .then(response => {
+//             let department = response.delDept;
+//             db.query("SELECT name, id FROM department", function (err, results) {    
+//                 for (let i = 0; i < results.length; i++) {
+//                     if (results[i].name === department) {
+//                         let deptId = results[i].id;
+//                         useDeptIdForDelete(department, deptId);
+//                     }}
+//             })                         
            
-        })
-};
+//         })
+// };
 
-function useDeptIdForDelete(department, deptId) {  
-    db.query(`DELETE FROM department WHERE name='${department}'`, function (err, results) {
-                const index = departmentArray.indexOf({name: department, id: deptId});               
-                departmentArray.splice(index, 1);                  
-                console.log(`The department ${department} has been deleted from the database`);
-                askQuestions();
-            })
-};
+// function useDeptIdForDelete(department, deptId) {  
+//     db.query(`DELETE FROM department WHERE name='${department}'`, function (err, results) {
+//                 const index = departmentArray.indexOf({name: department, id: deptId});               
+//                 departmentArray.splice(index, 1);                  
+//                 console.log(`The department ${department} has been deleted from the database`);
+//                 askQuestions();
+//             })
+// };
 
 function viewEmpByMgr() {
-    db.query("SELECT concat(manager.first_name,' ',manager.last_name) as Manager, concat(employees.first_name,' ',employees.last_name) AS Employee FROM employee employees JOIN employee manager ON employees.manager_id = manager.id GROUP BY manager.last_name, manager.first_name, employees.last_name, employees.first_name;", function (err, results) {        
+    db.query("SELECT concat(manager.first_name,' ',manager.last_name) as Manager, concat(employees.first_name,' ',employees.last_name) AS Employee FROM employee employees JOIN employee manager ON employees.manager_id = manager.id ORDER BY manager.id", function (err, results) {        
         console.table(results);
         askQuestions();
     })
 };
 
 function viewEmpByDept() {
-    db.query("SELECT department.name AS Department, concat(first_name,' ',last_name) AS Employee, role.title AS Title FROM department JOIN role ON department.id = role.department_id JOIN employee ON role.id = employee.role_id GROUP BY department.name, role.title, employee.last_name, employee.first_name", function (err, results) {        
+    db.query("SELECT department.name AS Department, concat(first_name,' ',last_name) AS Employee, role.title AS Title FROM department JOIN role ON department.id = role.department_id JOIN employee ON role.id = employee.role_id ORDER BY department.id", function (err, results) {        
         console.table(results);
         askQuestions();
     })
