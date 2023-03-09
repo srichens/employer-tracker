@@ -2,10 +2,11 @@ SELECT role.id, role.title, department.name AS department, role.salary
 FROM role
 JOIN department ON role.department_id = department.id;
 
-SELECT DISTINCT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary
+SELECT DISTINCT employee.id, concat(employee.first_name, ' ' ,employee.last_name) AS Employee, role.title AS Title, department.name AS Department, role.salary AS Salary, concat(e.first_name, ' ' ,e.last_name) AS Manager
 FROM employee
-JOIN role ON employee.role_id = role.id
-JOIN department ON role.department_id = department.id;
+INNER JOIN role ON employee.role_id = role.id
+INNER JOIN department ON department.id = role.department_id
+LEFT JOIN employee e on employee.manager_id = e.id;
 
 SELECT title FROM role;
 
@@ -34,7 +35,6 @@ JOIN employee manager
 ON employees.manager_id = manager.id
 ORDER BY manager.id;
 
-SELECT employee.first_name, employee.last_name, department.name AS Department 
-FROM employee 
-JOIN employee_role ON employee.role_id = employee_role.id 
-JOIN department ON employee_role.department_id = department.id ORDER BY employee.id;
+
+
+

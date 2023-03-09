@@ -23,7 +23,7 @@ const startMessage = [
         message: "What would you like to do?",
         choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 
         'Update Employee Manager', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 
-        'View Employees by Manager', 'View Employees by Department', 'Delete Role', 'Delete Department', 'Quit']
+        'View Employees by Manager', 'View Employees by Department', 'Quit']
     }
 ];
 
@@ -101,7 +101,7 @@ function askQuestions() {
 
 function viewEmployees() {
 
-    db.query('SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary FROM employee JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id', function (err, results) {              
+    db.query("SELECT DISTINCT employee.id AS Employee_ID, concat(employee.first_name, ' ' ,employee.last_name) AS Employee, role.title AS Title, department.name AS Department, role.salary AS Salary, concat(e.first_name, ' ' ,e.last_name) AS Manager FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON department.id = role.department_id LEFT JOIN employee e on employee.manager_id = e.id", function (err, results) {              
         console.table(results);
         askQuestions();
     });
@@ -277,7 +277,7 @@ function addUpdatedMgr(employeeId, mgrId) {
 };
 
 function viewRoles() {
-    db.query('SELECT role.id, role.title, department.name AS department, role.salary FROM role JOIN department ON role.department_id = department.id',
+    db.query('SELECT role.id AS Title_ID, role.title AS Title, department.name AS Department, role.salary AS Salary FROM role JOIN department ON role.department_id = department.id',
         function (err, results) {
             console.table(results);
             askQuestions();
@@ -344,7 +344,7 @@ function getRoleId(rolename) {
 };
 
 function viewDepartments() {
-    db.query('SELECT * FROM department', function (err, results) {        
+    db.query('SELECT id AS Department_ID, name AS Department FROM department', function (err, results) {        
         console.table(results);
         askQuestions();
     })
@@ -384,87 +384,6 @@ function getDeptId(department) {
      }
  })
 };
-
-// const deleteRoleQues = [
-//     {
-//         type: 'list',
-//         name: 'delRole',
-//         message: "Which role would you like to delete?",
-//         choices: () => {
-//             return roleArray.map(r => {
-//                 return {
-//                     name: r.title,
-//                     value: r.id
-//                 }
-//             })
-//         }
-//     }
-// ];
-
-// function deleteRole() {
-//     inquirer
-//         .prompt(deleteRoleQues)
-//         .then(response => {
-//             let rolename = response.delRole;
-//             db.query("SELECT title, id FROM role", function (err, results) {    
-//                 for (let i = 0; i < results.length; i++) {
-//                     if (results[i].title === rolename) {
-//                         let roleId = results[i].id;
-//                         useRoleIdForDelete(rolename, roleId);
-//                     }}
-//             })                         
-           
-//         })
-// };
-
-// function useRoleIdForDelete(rolename, roleId) {  
-//     db.query(`DELETE FROM role WHERE title='${rolename}'`, function (err, results) {
-//                 const index = roleArray.indexOf({title: rolename, id: roleId});               
-//                 roleArray.splice(index, 1);                  
-//                 console.log(`The role ${rolename} has been deleted from the database`);
-//                 askQuestions();
-//             })
-// // };
-// const deleteDeptQues = [
-//     {
-//         type: 'list',
-//         name: 'delDept',
-//         message: "Which department would you like to delete?",
-//         choices: () => {
-//             return departmentArray.map(d => {
-//                 return {
-//                     name: d.name,
-//                     value: d.name
-//                 }
-//             })
-//         }
-//     }
-// ];
-
-// function deleteDepartment() {
-//     inquirer
-//         .prompt(deleteDeptQues)
-//         .then(response => {
-//             let department = response.delDept;
-//             db.query("SELECT name, id FROM department", function (err, results) {    
-//                 for (let i = 0; i < results.length; i++) {
-//                     if (results[i].name === department) {
-//                         let deptId = results[i].id;
-//                         useDeptIdForDelete(department, deptId);
-//                     }}
-//             })                         
-           
-//         })
-// };
-
-// function useDeptIdForDelete(department, deptId) {  
-//     db.query(`DELETE FROM department WHERE name='${department}'`, function (err, results) {
-//                 const index = departmentArray.indexOf({name: department, id: deptId});               
-//                 departmentArray.splice(index, 1);                  
-//                 console.log(`The department ${department} has been deleted from the database`);
-//                 askQuestions();
-//             })
-// };
 
 function viewEmpByMgr() {
     db.query("SELECT concat(manager.first_name,' ',manager.last_name) as Manager, concat(employees.first_name,' ',employees.last_name) AS Employee FROM employee employees JOIN employee manager ON employees.manager_id = manager.id ORDER BY manager.id", function (err, results) {        
