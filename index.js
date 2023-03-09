@@ -15,7 +15,7 @@ const db = mysql.createConnection(
 let roleArray = [];
 let departmentArray = [];
 let employeeArray = [];
-let departmentIdArray = [];
+// let departmentIdArray = [];
 
 const startMessage = [
     {
@@ -24,7 +24,7 @@ const startMessage = [
         message: "What would you like to do?",
         choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 
         'Update Employee Manager', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 
-        'View Employees by Manager', 'View Employees by Department', 'Delete Department', 'Quit']
+        'View Employees by Manager', 'View Employees by Department', 'Delete Role', 'Delete Department', 'Quit']
     }
 ];
 
@@ -92,6 +92,8 @@ function askQuestions() {
                 viewEmpByMgr()
             } else if (response.start === 'View Employees by Department') {
                 viewEmpByDept()
+            } else if (response.start === 'Delete Role') {
+                deleteRole()
             } else if (response.start === 'Delete Department') {
                 deleteDepartment()
             } else { console.log('Goodbye') }
@@ -384,6 +386,46 @@ function getDeptId(department) {
  })
 };
 
+const deleteRoleQues = [
+    {
+        type: 'list',
+        name: 'delRole',
+        message: "Which role would you like to delete?",
+        choices: () => {
+            return roleArray.map(r => {
+                return {
+                    name: r.title,
+                    value: r.id
+                }
+            })
+        }
+    }
+];
+
+function deleteRole() {
+    inquirer
+        .prompt(deleteRoleQues)
+        .then(response => {
+            let rolename = response.delRole;
+            db.query("SELECT title, id FROM role", function (err, results) {    
+                for (let i = 0; i < results.length; i++) {
+                    if (results[i].title === rolename) {
+                        let roleId = results[i].id;
+                        useRoleIdForDelete(rolename, roleId);
+                    }}
+            })                         
+           
+        })
+};
+
+function useRoleIdForDelete(rolename, roleId) {  
+    db.query(`DELETE FROM role WHERE title='${rolename}'`, function (err, results) {
+                const index = roleArray.indexOf({title: rolename, id: roleId});               
+                roleArray.splice(index, 1);                  
+                console.log(`The role ${rolename} has been deleted from the database`);
+                askQuestions();
+            })
+};
 const deleteDeptQues = [
     {
         type: 'list',
@@ -411,42 +453,18 @@ function deleteDepartment() {
                         let deptId = results[i].id;
                         useDeptIdForDelete(department, deptId);
                     }}
-            })  
-                        
-            
-            //     db.query(`DELETE FROM department WHERE name='${department}'`, function (err, results) {
-            //         const index = departmentArray.indexOf(department);
-            //         departmentArray.splice(index, 1);                
-            //         // departmentArray.push(department);
-            //         console.log(`The department ${department} has been deleted from the database`);
-            //         askQuestions();
-            //     })
+            })                         
+           
         })
 };
 
 function useDeptIdForDelete(department, deptId) {  
     db.query(`DELETE FROM department WHERE name='${department}'`, function (err, results) {
-                const index = departmentArray.indexOf({name: department, id: deptId});
-                // console.log(index);
-                departmentArray.splice(index, 1);     
-                // console.log(departmentArray);           
-                // departmentArray.push(department);
+                const index = departmentArray.indexOf({name: department, id: deptId});               
+                departmentArray.splice(index, 1);                  
                 console.log(`The department ${department} has been deleted from the database`);
                 askQuestions();
             })
-//     db.query("SELECT name, id FROM department", function (err, results) {    
-//      for (let i = 0; i < results.length; i++) {
-//          if (results[i].name === department) {
-//              let deptId = results[i].id;
-//              departmentArray.push({
-//                  name: results[i].name,
-//                  id: deptId
-//              });
-//              console.log(`The department ${department} has been added to the database`);
-//              askQuestions();               
-//          }
-//      }
-//  })
 };
 
 function viewEmpByMgr() {
