@@ -9,13 +9,13 @@ This week's challenge was to build a command-line application from scratch to ma
 2. The employees, departments, and roles are tables in a SQL database. The inquirer questions return answers that query the database. 
 3. The queries for viewing departments, roles and employees must be displayed as tables, using console.table. The tables must include specified columns, some that come from different tables, so the queries must join tables.
 4. When a department, role, or employee is added to the database, those new adds must be immediately available to choose from when continuing on to a different option in the menu.
-5. *Bonus Tasks that are also included:* Update employee managers, veiw employees by managers, and view employees by department.
+5. *Bonus Tasks that are also included:* Update employee managers, view employees by managers, and view employees by department.
 
 
 ## Table of Contents
 1. [Installation](#installation)
 2. [Usage](#usage)
-3. [Process Highligts](#process-highlights)
+3. [Process Highlights](#process-highlights)
 4. [License](#license)
 5. [Contributing](#contributing)
 6. [Questions](#questions)
