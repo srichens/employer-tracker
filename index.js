@@ -15,6 +15,7 @@ const db = mysql.createConnection(
 let roleArray = [];
 let departmentArray = [];
 let employeeArray = [];
+let managerArray = [];
 
 const startMessage = [
     {
@@ -62,6 +63,21 @@ function employeeList() {
             employeeArray.push({
                 name: results[i].name,
                 id: results[i].id
+            });
+            managerList()
+    })
+};
+
+function managerList() {
+    db.query("SELECT concat(employee.first_name,' ',employee.last_name) AS name, id FROM employee", function (err, results) {
+        for (let i = 0; i < results.length; i++)
+            managerArray.push({
+                name: results[i].name,
+                id: results[i].id
+            });
+            managerArray.unshift({
+                name: "None",
+                id: 0
             });
             askQuestions()
     })
@@ -136,7 +152,7 @@ const addEmpQues = [
         name: 'manager',
         message: "Who is the employee's manager?",
         choices: () => {
-            return employeeArray.map(e => {
+            return managerArray.map(e => {
                 return {
                     name: e.name,
                     value: e.id
@@ -159,10 +175,17 @@ function addEmployee() {
 };
 
 function newEmployee(firstName, lastName, employeeRoleId, employeeMgrId) {
-    db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${firstName}', '${lastName}', '${employeeRoleId}', '${employeeMgrId}')`, function (err, results) {
-        let name = `${firstName} ${lastName}`;      
-        getEmployeeId(name);       
-    })  
+    if(employeeMgrId === 0){
+        db.query(`INSERT INTO employee (first_name, last_name, role_id) VALUES ('${firstName}', '${lastName}', '${employeeRoleId}')`, function (err, results) {
+            let name = `${firstName} ${lastName}`;      
+            getEmployeeId(name);       
+        })  
+    } else {
+        db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${firstName}', '${lastName}', '${employeeRoleId}', '${employeeMgrId}')`, function (err, results) {
+            let name = `${firstName} ${lastName}`;      
+            getEmployeeId(name);       
+        })  
+    }
 };
 
 function getEmployeeId(name) {
@@ -171,6 +194,10 @@ function getEmployeeId(name) {
             if (results[i].name === name) {
                 let employeeId = results[i].id;
                 employeeArray.push({
+                    name: results[i].name,
+                    id: employeeId
+                });
+                managerArray.push({
                     name: results[i].name,
                     id: employeeId
                 });
