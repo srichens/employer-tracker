@@ -321,17 +321,13 @@ function addRole() {
 };
 
 function newRole(rolename, salary, departmentId) {
-    db.query(`INSERT INTO role (title, salary, department_id) VALUES ('${rolename}', '${salary}', '${departmentId}')`, function (err, results) {
-        // roleArray.push(`${rolename}`);
-        // console.log(`The role ${rolename} has been added to the database`)
+    db.query(`INSERT INTO role (title, salary, department_id) VALUES ('${rolename}', '${salary}', '${departmentId}')`, function (err, results) {       
        getRoleId(rolename);
     })
 };
 
-function getRoleId(rolename) {
-    // console.log(rolename);
-    db.query("SELECT title, id FROM role", function (err, results) {
-        // console.table(results);
+function getRoleId(rolename) {   
+    db.query("SELECT title, id FROM role", function (err, results) {        
      for (let i = 0; i < results.length; i++) {
          if (results[i].title === rolename) {
              let roleId = results[i].id;
@@ -366,19 +362,14 @@ function addDepartment() {
         .prompt(addDeptQues)
         .then(response => {
             let department = response.addDept;
-            db.query(`INSERT INTO department (name) VALUES ('${department}')`, function (err, results) {
-                // departmentArray.push(department);
-                // console.log(`The department ${department} has been added to the database`);
-                // askQuestions();
+            db.query(`INSERT INTO department (name) VALUES ('${department}')`, function (err, results) {             
                 getDeptId(department);
             })
         })
 };
 
-function getDeptId(department) {
-    // console.log(rolename);
-    db.query("SELECT name, id FROM department", function (err, results) {
-        // console.table(results);
+function getDeptId(department) {  
+    db.query("SELECT name, id FROM department", function (err, results) {    
      for (let i = 0; i < results.length; i++) {
          if (results[i].name === department) {
              let deptId = results[i].id;
@@ -414,14 +405,48 @@ function deleteDepartment() {
         .prompt(deleteDeptQues)
         .then(response => {
             let department = response.delDept;
-            db.query(`DELETE FROM department WHERE name='${department}'`, function (err, results) {
-                const index = departmentArray.indexOf(department);
-                departmentArray.splice(index, 1);                
+            db.query("SELECT name, id FROM department", function (err, results) {    
+                for (let i = 0; i < results.length; i++) {
+                    if (results[i].name === department) {
+                        let deptId = results[i].id;
+                        useDeptIdForDelete(department, deptId);
+                    }}
+            })  
+                        
+            
+            //     db.query(`DELETE FROM department WHERE name='${department}'`, function (err, results) {
+            //         const index = departmentArray.indexOf(department);
+            //         departmentArray.splice(index, 1);                
+            //         // departmentArray.push(department);
+            //         console.log(`The department ${department} has been deleted from the database`);
+            //         askQuestions();
+            //     })
+        })
+};
+
+function useDeptIdForDelete(department, deptId) {  
+    db.query(`DELETE FROM department WHERE name='${department}'`, function (err, results) {
+                const index = departmentArray.indexOf({name: department, id: deptId});
+                // console.log(index);
+                departmentArray.splice(index, 1);     
+                // console.log(departmentArray);           
                 // departmentArray.push(department);
                 console.log(`The department ${department} has been deleted from the database`);
                 askQuestions();
             })
-        })
+//     db.query("SELECT name, id FROM department", function (err, results) {    
+//      for (let i = 0; i < results.length; i++) {
+//          if (results[i].name === department) {
+//              let deptId = results[i].id;
+//              departmentArray.push({
+//                  name: results[i].name,
+//                  id: deptId
+//              });
+//              console.log(`The department ${department} has been added to the database`);
+//              askQuestions();               
+//          }
+//      }
+//  })
 };
 
 function viewEmpByMgr() {
