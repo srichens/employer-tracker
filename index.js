@@ -16,14 +16,15 @@ let roleArray = [];
 let departmentArray = [];
 let employeeArray = [];
 let departmentIdArray = [];
-let employeeId;
 
 const startMessage = [
     {
         type: 'list',
         name: 'start',
         message: "What would you like to do?",
-        choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'Update Employee Manager', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit']
+        choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 
+        'Update Employee Manager', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 
+        'View Employees by Manager', 'View Employees by Department', 'Quit']
     }
 ];
 
@@ -84,6 +85,10 @@ function askQuestions() {
                 viewDepartments()
             } else if (response.start === 'Add Department') {
                 addDepartment()
+            } else if (response.start === 'View Employees by Manager') {
+                viewEmpByMgr()
+            } else if (response.start === 'View Employees by Department') {
+                viewEmpByDept()
             } else { console.log('Goodbye') }
         })
 };
@@ -158,7 +163,7 @@ function getEmployeeID(name) {
        db.query("SELECT concat(first_name,' ',last_name) AS name, employee.id AS id FROM employee", function (err, results) {
         for (let i = 0; i < results.length; i++) {
             if (results[i].name === name) {
-                employeeId = results[i].id;
+                let employeeId = results[i].id;
                 employeeArray.push({
                     name: results[i].name,
                     id: employeeId
@@ -345,3 +350,18 @@ function addDepartment() {
             })
         })
 };
+
+function viewEmpByMgr() {
+    db.query("SELECT concat(manager.first_name,' ',manager.last_name) as Manager, concat(employees.first_name,' ',employees.last_name) AS Employee FROM employee employees JOIN employee manager ON employees.manager_id = manager.id GROUP BY manager.last_name, manager.first_name, employees.last_name, employees.first_name;", function (err, results) {        
+        console.table(results);
+        askQuestions();
+    })
+};
+
+function viewEmpByDept() {
+    db.query("SELECT department.name AS Department, concat(first_name,' ',last_name) AS Employee, role.title AS Title FROM department JOIN role ON department.id = role.department_id JOIN employee ON role.id = employee.role_id GROUP BY department.name, role.title, employee.last_name, employee.first_name", function (err, results) {        
+        console.table(results);
+        askQuestions();
+    })
+};
+
