@@ -9,7 +9,6 @@ const db = mysql.createConnection(
         password: 'Asdfjk!2',
         database: 'company_db'
     },
-    console.log(`Connected to the company_db database.`)
 );
 
 let roleArray = [];
@@ -201,7 +200,7 @@ function getEmployeeId(name) {
                     name: results[i].name,
                     id: employeeId
                 });
-                console.log(`${name} has been added to the database`);
+                console.log(`The employee ${name} has been added to the database`);
                 askQuestions();               
             }
         }
@@ -363,7 +362,7 @@ function getRoleId(rolename) {
                  title: results[i].title,
                  id: roleId
              });
-             console.log(`${rolename} has been added to the database`);
+             console.log(`The role ${rolename} has been added to the database`);
              askQuestions();               
          }
      }
