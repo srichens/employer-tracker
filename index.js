@@ -24,7 +24,7 @@ const startMessage = [
         message: "What would you like to do?",
         choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 
         'Update Employee Manager', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 
-        'View Employees by Manager', 'View Employees by Department', 'Quit']
+        'View Employees by Manager', 'View Employees by Department', 'Delete Department', 'Quit']
     }
 ];
 
@@ -47,9 +47,12 @@ function roleList() {
 };
 
 function departmentList() {
-    db.query('SELECT name FROM department', function (err, results) {
+    db.query('SELECT name, id FROM department', function (err, results) {
         for (let i = 0; i < results.length; i++)
-            departmentArray.push(results[i].name);
+            departmentArray.push({
+                name: results[i].name,
+                id: results[i].id
+            });
             employeeList()
     })
 };
@@ -89,6 +92,8 @@ function askQuestions() {
                 viewEmpByMgr()
             } else if (response.start === 'View Employees by Department') {
                 viewEmpByDept()
+            } else if (response.start === 'Delete Department') {
+                deleteDepartment()
             } else { console.log('Goodbye') }
         })
 };
@@ -155,11 +160,11 @@ function addEmployee() {
 function newEmployee(firstName, lastName, employeeRoleId, employeeMgrId) {
     db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${firstName}', '${lastName}', '${employeeRoleId}', '${employeeMgrId}')`, function (err, results) {
         let name = `${firstName} ${lastName}`;      
-        getEmployeeID(name);       
+        getEmployeeId(name);       
     })  
 };
 
-function getEmployeeID(name) {
+function getEmployeeId(name) {
        db.query("SELECT concat(first_name,' ',last_name) AS name, employee.id AS id FROM employee", function (err, results) {
         for (let i = 0; i < results.length; i++) {
             if (results[i].name === name) {
@@ -293,34 +298,62 @@ const addRoleQues = [
         type: 'list',
         name: 'department',
         message: "Which department does the role belong to?",
-        choices: departmentArray
+        choices: () => {
+            return departmentArray.map(d => {
+                return {
+                    name: d.name,
+                    value: d.id
+                }
+            })
+        }
     }
 ];
 
 function addRole() {
+    // console.log(departmentArray);
     inquirer
         .prompt(addRoleQues)
         .then(response => {
             let rolename = response.rolename;
             let salary = response.salary;
-            db.query('SELECT * FROM department', function (err, results) {
-                for (let i = 0; i < results.length; i++) {
-                    departmentIdArray.push(results[i]);
-                    if (departmentIdArray[i].name == response.department) {
-                        let departmentId = departmentIdArray[i].id;
-                        newRole(rolename, salary, departmentId);
-                    }
-                }
-            })
+            let departmentId = response.department;
+            newRole(rolename, salary, departmentId);
+            // db.query('SELECT * FROM department', function (err, results) {
+            //     for (let i = 0; i < results.length; i++) {
+            //         departmentIdArray.push(results[i]);
+            //         if (departmentIdArray[i].name == response.department) {
+            //             let departmentId = departmentIdArray[i].id;
+            //             newRole(rolename, salary, departmentId);
+            //         }
+            //     }
+            // })
         })
 };
 
 function newRole(rolename, salary, departmentId) {
     db.query(`INSERT INTO role (title, salary, department_id) VALUES ('${rolename}', '${salary}', '${departmentId}')`, function (err, results) {
-        roleArray.push(`${rolename}`);
-        console.log(`The role ${rolename} has been added to the database`)
-        askQuestions();
+        // roleArray.push(`${rolename}`);
+        // console.log(`The role ${rolename} has been added to the database`)
+       getRoleId(rolename);
     })
+};
+
+function getRoleId(rolename) {
+    // console.log(rolename);
+    db.query("SELECT title, id FROM role", function (err, results) {
+        // console.table(results);
+     for (let i = 0; i < results.length; i++) {
+         if (results[i].title === rolename) {
+             let roleId = results[i].id;
+             roleArray.push({
+                 title: results[i].title,
+                 id: roleId
+             });
+             console.log(`${rolename} has been added to the database`);
+             askQuestions();               
+         }
+     }
+ })
 };
 
 function viewDepartments() {
@@ -346,6 +379,37 @@ function addDepartment() {
             db.query(`INSERT INTO department (name) VALUES ('${department}')`, function (err, results) {
                 departmentArray.push(department);
                 console.log(`The department ${department} has been added to the database`);
+                askQuestions();
+            })
+        })
+};
+
+const deleteDeptQues = [
+    {
+        type: 'list',
+        name: 'delDept',
+        message: "Which department would you like to delete?",
+        choices: () => {
+            return departmentArray.map(d => {
+                return {
+                    name: d.name,
+                    value: d.name
+                }
+            })
+        }
+    }
+];
+
+function deleteDepartment() {
+    inquirer
+        .prompt(deleteDeptQues)
+        .then(response => {
+            let department = response.delDept;
+            db.query(`DELETE FROM department WHERE name='${department}'`, function (err, results) {
+                // const index = departmentArray.indexOf(department);
+                // departmentArray.splice(index, 1);                
+                // departmentArray.push(department);
+                console.log(`The department ${department} has been deleted from the database`);
                 askQuestions();
             })
         })
